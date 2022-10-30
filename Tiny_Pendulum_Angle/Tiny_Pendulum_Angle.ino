@@ -17,11 +17,20 @@
  *      DI on Pin 6 (PB1) (Button input)
  */
 
+
+// I have decided not to continue with this.
+// I2C implementation is unncessarily complicated to implement.
+// and I don't even need to.
+// The Arduino should be good enough since I'm using interrupts anyways... right?
+// we shall see.
+
+
+
 #define IRE1 PB3
 #define IRE2 PB4
 #define ButtonPin PB1
-#define FORWARD 1
-#define REVERSE -1
+#define CLOCKWISE 1
+#define COUNTERCLOCKWISE -1
 
 // Flags for the IRE
 volatile int flag_IRE1 = 1;
@@ -30,7 +39,7 @@ volatile int direction = 0;
 
 ISR (PCINT0_vect){	// all PCINT pins share the same vector
     // PCIF flag in GIFR is set on any PCINT
-	direction = ((PINB&(1<<PB3))<<1)^(PINB&(1<<PB4))?FORWARD:REVERSE;
+	direction = ((PINB & (1<<IRE1)) <<1)^(PINB & (1<<IRE2))?FORWARD:REVERSE;
 }
 
 
@@ -49,11 +58,11 @@ int main(void){
 	sei();
 	// cli() to prevent interrupts
 
+	double angle = 0;
 	// void loop() in Arduino
 	while(1){
-		
+		angle;
 	}
 		
 	return 0;
 }
-
