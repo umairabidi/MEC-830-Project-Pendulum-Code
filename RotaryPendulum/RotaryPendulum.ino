@@ -13,11 +13,11 @@
  * 
  */
 
-#define POT_PIN A0;
-#define MOTOR_IN1
-#define MOTOR_IN2
-#define MOTOR_PWM_PIN
-#define START_BUTTON_PIN
+#define POT_PIN 	A0
+#define MOTOR_IN1	1
+#define MOTOR_IN2	1
+#define MOTOR_PWM_PIN	1
+#define START_BUTTON_PIN	A4
 
 double Kp=1;		// value from 0 to 255
 double Ki=0;
@@ -28,12 +28,14 @@ double currentPosition = 0;			//angular position with vertical being zero
 double zeroPosition;				// The zero position that is set when the button is pressed. May need hardcoding.
 int startFlag = 0;
 int button = 0;
+double error;
+double calculatedMotion;
 
 unsigned long currentTime = 0;
 unsigned long prevTime = 0;
 unsigned long dT = 0;
 void startButton();
-void moveMotor(int speed);
+void moveMotor(int Speed);
 
 void setup(){
 	pinMode(MOTOR_IN1, OUTPUT);
@@ -50,14 +52,21 @@ void loop(){
 	
 	while(!startFlag){
 		Serial.println("Press the button to start");
+		startButton();
 		zeroPosition = analogRead(POT_PIN);				// Take zero as the current position
+		Serial.print("zeroPosition is: ");
+		Serial.println(zeroPosition);
 	}
 	
+	Serial.print("Current Position is: ");
+	Serial.println(currentPosition);
 	currentPosition = analogRead(POT_PIN);
 	currentTime = millis();
 	
 	error = zeroPosition - currentPosition;
-	if (abs(zeroPosition - error) > 100){	// about 30°
+	Serial.print("error is: ");
+	Serial.println(error);
+	if (abs(zeroPosition - currentPosition) > 200){	// about 10 per 3°
 		startFlag = 0;
 		Serial.println("Fail");
 	}
@@ -66,6 +75,7 @@ void loop(){
 	
 	// P control
 	calculatedMotion = Kp * error;
+	Serial.print("calculatedMotion is: ");
 	Serial.println(calculatedMotion);
 	moveMotor(calculatedMotion);
 	
@@ -90,27 +100,28 @@ void startButton(){
 	if (Button_f && digitalRead(START_BUTTON_PIN)){
 		startFlag = 1;
 		Button_f = 0;
+		Serial.println("pressed");
 	}
 	else {
 		startFlag = 0;
 	}
 }
 
-void moveMotor(int speed){
-	if (speed > 0){
-		digitalWrite(Motor_in1, LOW);
-		digitalWrite(Motor_in2, HIGH);
-		analogWrite(MOTOR_PWM_PIN, speed);
+void moveMotor(int Speed){
+	if (Speed > 0){
+		digitalWrite(MOTOR_IN1, LOW);
+		digitalWrite(MOTOR_IN2, HIGH);
+		analogWrite(MOTOR_PWM_PIN, Speed);
 	}
 	
-	if (speed < 0){
-		digitalWrite(Motor_in1, HIGH);
-		digitalWrite(Motor_in2, LOW);
-		analogWrite(MOTOR_PWM_PIN, speed);
+	if (Speed < 0){
+		digitalWrite(MOTOR_IN1, HIGH);
+		digitalWrite(MOTOR_IN2, LOW);
+		analogWrite(MOTOR_PWM_PIN, Speed);
 	}
 	
-	if (speed == 0){
-		digitalWrite(Motor_in1, LOW);
-		digitalWrite(Motor_in2, LOW);
+	if (Speed == 0){
+		digitalWrite(MOTOR_IN1, LOW);
+		digitalWrite(MOTOR_IN2, LOW);
 	}
 }
