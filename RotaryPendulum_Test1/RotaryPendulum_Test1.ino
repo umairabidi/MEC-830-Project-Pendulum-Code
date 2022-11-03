@@ -14,9 +14,9 @@
  */
 
 #define POT_PIN 	A0
-#define MOTOR_IN1	7
-#define MOTOR_IN2	8
-#define MOTOR_PWM_PIN	9
+#define MOTOR_IN1	1
+#define MOTOR_IN2	1
+#define MOTOR_PWM_PIN	1
 #define START_BUTTON_PIN	A4
 
 double Kp=1;		// value from 0 to 255
