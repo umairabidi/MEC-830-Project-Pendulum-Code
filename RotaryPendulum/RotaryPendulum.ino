@@ -19,17 +19,20 @@
 #define MOTOR_PWM_PIN	9
 #define START_BUTTON_PIN	A4
 
-double Kp=20;		// value from 0 to 255
-double Ki=0;
+double Kp=30;		// value from 0 to 255
+double Ki=10;
 double Kd=0;
 double requiredPosition;
 
-double currentPosition = 0;			//angular position with vertical being zero
-double zeroPosition;				// The zero position that is set when the button is pressed. May need hardcoding.
-int startFlag = 0;
-int button = 0;
-double error;
-double calculatedMotion;
+double currentPosition = 0;	//angular position
+double zeroPosition;		// The zero position that is set when the button is pressed.
+int startFlag = 0;			// Can we start the program?
+int button = 0;				// Button state
+double errorPos;			// position error
+double errorInt;			// integral of error
+double prevPosition;		// used for I and D calculations
+double calculatedMotion;	// Final output motion required for the motor
+
 
 unsigned long currentTime = 0;
 unsigned long prevTime = 0;
@@ -51,42 +54,32 @@ void setup(){
 void loop(){
 	
 	while(!startFlag){
-		moveMotor(0);
-		Serial.println("Press the button to start");
+		moveMotor(0);	//Brake immediately
 		startButton();
 		zeroPosition = analogRead(POT_PIN);				// Take zero as the current position
-		Serial.print("zeroPosition is: ");
-		Serial.println(zeroPosition);
+		prevPosition = zeroPosition;
+		prevTime = 0;			// reset time
 	}
 	
-	Serial.print("Current Position is: ");
-	Serial.println(currentPosition);
 	currentPosition = analogRead(POT_PIN);
 	currentTime = millis();
 	
-	error = zeroPosition - currentPosition;
-	Serial.print("error is: ");
-	Serial.println(error);
-	if (abs(zeroPosition - currentPosition) > 100){	// about 10 per 3°
+	errorPos = zeroPosition - currentPosition;
+	if (abs(errorPos) > 100){	// about 10 per 3°, 100 is 30°
 		startFlag = 0;
-		Serial.println("Fail");
 	}
 	
-	dT = millis() - prevTime;
-	
-	// P control
-	calculatedMotion = Kp * error;
-	Serial.print("calculatedMotion is: ");
-	Serial.println(calculatedMotion);
-	moveMotor(calculatedMotion);
-	
 	// PI control
-	//moveMotor(Kp * error_integral);
-	
+	dT = millis() - prevTime;	
+	errorInt = dT*(0.5)*(currentPosition + prevPosition);
+	calculatedMotion = Kp*errorPos + Ki*errorInt;
+	moveMotor(calculatedMotion);
+	//Serial.print("calculatedMotion is: ");
+	//Serial.println(calculatedMotion);
+
+	prevPosition = currentPosition;
+	prevTime = currentTime;
 }
-
-
-
 
 
 void startButton(){
