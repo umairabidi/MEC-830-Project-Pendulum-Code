@@ -14,12 +14,12 @@
  */
 
 #define POT_PIN 	A0
-#define MOTOR_IN1	1
-#define MOTOR_IN2	1
-#define MOTOR_PWM_PIN	1
+#define MOTOR_IN1	7
+#define MOTOR_IN2	8
+#define MOTOR_PWM_PIN	9
 #define START_BUTTON_PIN	A4
 
-double Kp=1;		// value from 0 to 255
+double Kp=20;		// value from 0 to 255
 double Ki=0;
 double Kd=0;
 double requiredPosition;
@@ -44,13 +44,14 @@ void setup(){
 	pinMode(START_BUTTON_PIN, INPUT);
 	pinMode(POT_PIN, INPUT);
 	
-	Serial.begin(9600);
+	//Serial.begin(9600);
 	
 }
 
 void loop(){
 	
 	while(!startFlag){
+		moveMotor(0);
 		Serial.println("Press the button to start");
 		startButton();
 		zeroPosition = analogRead(POT_PIN);				// Take zero as the current position
@@ -66,7 +67,7 @@ void loop(){
 	error = zeroPosition - currentPosition;
 	Serial.print("error is: ");
 	Serial.println(error);
-	if (abs(zeroPosition - currentPosition) > 200){	// about 10 per 3°
+	if (abs(zeroPosition - currentPosition) > 100){	// about 10 per 3°
 		startFlag = 0;
 		Serial.println("Fail");
 	}
@@ -117,7 +118,7 @@ void moveMotor(int Speed){
 	if (Speed < 0){
 		digitalWrite(MOTOR_IN1, HIGH);
 		digitalWrite(MOTOR_IN2, LOW);
-		analogWrite(MOTOR_PWM_PIN, Speed);
+		analogWrite(MOTOR_PWM_PIN, -Speed);
 	}
 	
 	if (Speed == 0){
