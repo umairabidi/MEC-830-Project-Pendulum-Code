@@ -1,5 +1,10 @@
 // 2022-11-03
 // Version 1
+// This code works to provide P control to the pendulum.
+// I need to add several things
+// - I and D control
+// - Position-based shutoff
+// - 
 
 /* 
  * This code will provide the appropriate rotation to balance an inverted pendulum.
