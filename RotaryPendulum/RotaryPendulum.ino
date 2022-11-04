@@ -18,8 +18,8 @@
 #define MOTOR_PWM_PIN	9
 #define START_BUTTON_PIN	A4
 
-double Kp=30;
-double Ki=10;
+double Kp=40;
+double Ki=40;
 double Kd=1;
 
 double requiredPosition;
