@@ -19,9 +19,9 @@
 #define MOTOR_PWM_PIN	9
 #define START_BUTTON_PIN	A4
 
-double Kp=30;		// value from 0 to 255
-double Ki=10;
-double Kd=0;
+double Kp=30;
+double Ki=30;
+double Kd=1;
 double requiredPosition;
 
 double currentPosition = 0;	//angular position
@@ -29,7 +29,8 @@ double zeroPosition;		// The zero position that is set when the button is presse
 int startFlag = 0;			// Can we start the program?
 int button = 0;				// Button state
 double errorPos;			// position error
-double errorInt;			// integral of error
+double errorInt;			// integral of error (trapezoid approximation)
+double errorDer;			// Derivative of error (secant approximation)
 double prevPosition;		// used for I and D calculations
 double calculatedMotion;	// Final output motion required for the motor
 
@@ -47,7 +48,7 @@ void setup(){
 	pinMode(START_BUTTON_PIN, INPUT);
 	pinMode(POT_PIN, INPUT);
 	
-	//Serial.begin(9600);
+	//Serial.begin(57600);
 	
 }
 
@@ -59,23 +60,32 @@ void loop(){
 		zeroPosition = analogRead(POT_PIN);				// Take zero as the current position
 		prevPosition = zeroPosition;
 		prevTime = 0;			// reset time
+		errorInt = 0;
+		errorDer = 0;
 	}
 	
 	currentPosition = analogRead(POT_PIN);
 	currentTime = millis();
 	
 	errorPos = zeroPosition - currentPosition;
-	if (abs(errorPos) > 100){	// about 10 per 3°, 100 is 30°
+	if (abs(errorPos) > 150){	// about 10 per 3°, 100 is 30°
 		startFlag = 0;
 	}
 	
 	// PI control
-	dT = millis() - prevTime;	
+	dT = currentTime - prevTime;	
 	errorInt = dT*(0.5)*(currentPosition + prevPosition);
-	calculatedMotion = Kp*errorPos + Ki*errorInt;
-	moveMotor(calculatedMotion);
-	//Serial.print("calculatedMotion is: ");
-	//Serial.println(calculatedMotion);
+	//errorDer = abs(currentPosition - prevPosition)/dT;
+
+	
+//	Serial.println(errorPos);
+//	Serial.println(errorInt);
+//	Serial.println(errorDer);
+//	
+	calculatedMotion = Kp*errorPos + Ki*errorInt + Kd*errorDer;
+	moveMotor((int)calculatedMotion);
+//	Serial.print("calculatedMotion is: ");
+//	Serial.println(calculatedMotion);
 
 	prevPosition = currentPosition;
 	prevTime = currentTime;
@@ -103,12 +113,18 @@ void startButton(){
 
 void moveMotor(int Speed){
 	if (Speed > 0){
+		if (Speed > 255){
+			Speed = 255;
+		}
 		digitalWrite(MOTOR_IN1, LOW);
 		digitalWrite(MOTOR_IN2, HIGH);
 		analogWrite(MOTOR_PWM_PIN, Speed);
 	}
 	
 	if (Speed < 0){
+		if (Speed < -255){
+			Speed = -255;
+		}		
 		digitalWrite(MOTOR_IN1, HIGH);
 		digitalWrite(MOTOR_IN2, LOW);
 		analogWrite(MOTOR_PWM_PIN, -Speed);
