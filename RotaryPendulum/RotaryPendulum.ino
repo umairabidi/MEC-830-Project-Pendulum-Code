@@ -17,8 +17,8 @@
 #define MOTOR_PWM_PIN	9
 #define START_BUTTON_PIN	A4
 
-double Kp=30;
-double Ki=10;
+double Kp=40;
+double Ki=120;
 double Kd=0;
 
 double requiredPosition;
@@ -35,6 +35,7 @@ unsigned long currentTime = 0;
 unsigned long prevTime = 0;
 unsigned long dT = 0;
 
+unsigned long currentTime_print = 0;
 
 void startButton();
 void moveMotor(int Speed);
@@ -46,7 +47,7 @@ void setup(){
 	pinMode(START_BUTTON_PIN, INPUT);
 	pinMode(POT_PIN, INPUT);
 	
-	//Serial.begin(57600);
+	Serial.begin(115200);
 	
 }
 
@@ -76,6 +77,13 @@ void loop(){
 
 	calculatedMotion = Kp*errorPos + Ki*errorInt + Kd*errorDer;
 	moveMotor((int)calculatedMotion);
+
+	while(millis() - currentTime_print >= 25){
+		Serial.print(zeroPosition);
+		Serial.print("\t");
+		Serial.println(currentPosition);
+		currentTime_print = millis();
+	}
 
 	prevPosition = currentPosition;
 	prevTime = currentTime;
