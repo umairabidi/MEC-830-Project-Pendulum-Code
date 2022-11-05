@@ -1,14 +1,13 @@
-// 2022-11-04
-// Version 2
+// Start 2022-11-04
 
 /* 
  * This code will provide the appropriate rotation to balance an inverted pendulum.
  * It does this by specifying the direction and angle of the motor.
  * The L298N Dual H-Bridge driver is used.
- * Speed is mapped from -255 to 255, with negatives being CW and positive being CCW. (?)
+ * Speed is mapped from -255 to 255, with negatives being one direction and positive being the other.
  * Angle feedback is provided by a potentiometer.
  * To begin the motion, manually move the pendulum to the vertical position and press the start button.
- * The motor is powered with a 12 V supply for parameters Kp = 30 and Ki = 10
+ * The motor is powered with a 14 V supply for parameters Kp = 30 and Ki = 10
  * 
  */
 
@@ -18,9 +17,9 @@
 #define MOTOR_PWM_PIN	9
 #define START_BUTTON_PIN	A4
 
-double Kp=40;
-double Ki=40;
-double Kd=1;
+double Kp=30;
+double Ki=10;
+double Kd=0;
 
 double requiredPosition;
 double currentPosition;		//angular position
@@ -67,13 +66,13 @@ void loop(){
 	
 	errorPos = zeroPosition - currentPosition;
 	if (abs(errorPos) > 150){	// about 10 per 3°, 150 is 45°
-		startFlag = 0;
+		startFlag = 0;			// Cause the motion to stop entirely. Kill the motor and processing.
 	}
 	
 	// PI control
 	dT = currentTime - prevTime;	
 	errorInt = dT*(0.5)*(currentPosition + prevPosition);
-	//errorDer = abs(currentPosition - prevPosition)/dT;		// This breaks the code entirely
+	//errorDer = (currentPosition - prevPosition)/dT;		// This breaks the PID loop entirely.
 
 	calculatedMotion = Kp*errorPos + Ki*errorInt + Kd*errorDer;
 	moveMotor((int)calculatedMotion);
