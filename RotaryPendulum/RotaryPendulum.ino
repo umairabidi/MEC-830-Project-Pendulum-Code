@@ -16,6 +16,8 @@
 #define MOTOR_IN2	8
 #define MOTOR_PWM_PIN	9
 #define START_BUTTON_PIN	A4
+#define redLED 3
+#define greenLED 4
 
 double Kp=40;
 double Ki=120;
@@ -46,6 +48,8 @@ void setup(){
 	pinMode(MOTOR_PWM_PIN, OUTPUT);
 	pinMode(START_BUTTON_PIN, INPUT);
 	pinMode(POT_PIN, INPUT);
+	pinMode(redLED, OUTPUT);
+	pinMode(greenLED, OUTPUT);
 	
 	Serial.begin(115200);
 	
@@ -59,6 +63,8 @@ void loop(){
 		errorDer = 0;
 		prevPosition = zeroPosition;
 		zeroPosition = analogRead(POT_PIN);				// Take zero as the current position
+		digitalWrite(greenLED, LOW);
+		digitalWrite(redLED, HIGH);
 		startButton();
 	}
 	
@@ -102,7 +108,8 @@ void startButton(){
 	if (Button_f && digitalRead(START_BUTTON_PIN)){
 		startFlag = 1;
 		Button_f = 0;
-		Serial.println("pressed");
+		digitalWrite(redLED, LOW);
+		digitalWrite(greenLED, HIGH);
 	}
 	else {
 		startFlag = 0;
